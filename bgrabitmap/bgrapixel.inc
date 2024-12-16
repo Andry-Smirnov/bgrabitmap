@@ -142,7 +142,7 @@ const
       than 32768. In case of saturation, it fades towards white }
   function ApplyIntensityFast(color: TBGRAPixel; lightness: LongWord): TBGRAPixel;
   {* Combines two lightnesses together. A value of 32768 is neutral. The
-      result may exceed 65535 }
+      Result may exceed 65535 }
   function CombineLightness(lightness1,lightness2: Int32or64): Int32or64;
   {* Converts a color into grayscale }
   function BGRAToGrayscale(c: TBGRAPixel): TBGRAPixel;
@@ -178,11 +178,11 @@ const
   function BGRAToColor16Bit(const AColor: TBGRAPixel): Word;
   {* Computes the difference (with gamma correction) between two pixels,
       taking into account all dimensions, including transparency. The
-      result ranges from 0 to 65535 }
+      Result ranges from 0 to 65535 }
   function BGRAWordDiff(c1, c2: TBGRAPixel): word;
   {* Computes the difference (with gamma correction) between two pixels,
       taking into account all dimensions, including transparency. The
-      result ranges from 0 to 255 }
+      Result ranges from 0 to 255 }
   function BGRADiff(c1, c2: TBGRAPixel): byte;
   {* Fast computation of difference, without weighing the alpha channel and without gamma correction}
   function FastBGRALinearDiff(c1,c2: TBGRAPixel): byte;
@@ -322,12 +322,12 @@ type
 function StrToBlendOperation(str: string): TBlendOperation;
 var op: TBlendOperation;
 begin
-  result := boTransparent;
+  Result := boTransparent;
   str := LowerCase(str);
   for op := low(TBlendOperation) to high(TBlendOperation) do
     if str = LowerCase(BlendOperationStr[op]) then
     begin
-      result := op;
+      Result := op;
       exit;
     end;
 end;
@@ -337,23 +337,23 @@ end;
 procedure AllocateBGRAPixelBuffer(var ABuffer: TBGRAPixelBuffer; ASize: integer);
 begin
   if ASize > length(ABuffer) then
-    setlength(ABuffer, max(length(ABuffer)*2,ASize));
+    setlength(ABuffer, max(Length(ABuffer) * 2, ASize));
 end;
 
 function BGRA(red, green, blue, alpha: byte): TBGRAPixel;
 begin
-  LongWord(result) := (red shl TBGRAPixel_RedShift) or
-                   (green shl TBGRAPixel_GreenShift) or
-                   (blue shl TBGRAPixel_BlueShift) or
-                   (alpha shl TBGRAPixel_AlphaShift);
+  LongWord(Result) := (red shl TBGRAPixel_RedShift) or
+                      (green shl TBGRAPixel_GreenShift) or
+                      (blue shl TBGRAPixel_BlueShift) or
+                      (alpha shl TBGRAPixel_AlphaShift);
 end;
 
 function BGRA(red, green, blue: byte): TBGRAPixel; overload;
 begin
-  LongWord(result) := (red shl TBGRAPixel_RedShift) or
-                   (green shl TBGRAPixel_GreenShift) or
-                   (blue shl TBGRAPixel_BlueShift) or
-                   (255 shl TBGRAPixel_AlphaShift);
+  LongWord(Result) := (red shl TBGRAPixel_RedShift) or
+                      (green shl TBGRAPixel_GreenShift) or
+                      (blue shl TBGRAPixel_BlueShift) or
+                      (255 shl TBGRAPixel_AlphaShift);
 end;
 
 operator = (const c1, c2: TBGRAPixel): boolean;
@@ -372,22 +372,22 @@ begin
     Result := c.green;
   if c.blue > Result then
     Result := c.blue;
-  result := GammaExpansionTab[Result];
+  Result := GammaExpansionTab[Result];
 end;
 
 function SetIntensity(c: TBGRAPixel; intensity: word): TBGRAPixel;
 begin
-  result := GammaCompression(SetIntensity(GammaExpansion(c),intensity));
+  Result := GammaCompression(SetIntensity(GammaExpansion(c),intensity));
 end;
 
 function GetLightness(c: TBGRAPixel): word;
 begin
-  result := GetLightness(GammaExpansion(c));
+  Result := GetLightness(GammaExpansion(c));
 end;
 
 function SetLightness(c: TBGRAPixel; lightness: word): TBGRAPixel;
 begin
-  result := GammaCompression(SetLightness(GammaExpansion(c),lightness));
+  Result := GammaCompression(SetLightness(GammaExpansion(c),lightness));
 end;
 
 function ApplyLightnessFast(color: TBGRAPixel; lightness: word): TBGRAPixel;
@@ -396,29 +396,30 @@ var
   lightness256: byte;
 begin
   if lightness <= 32768 then
-  begin
-    if lightness = 32768 then
-      result := color else
     begin
-      lightness256 := GammaCompressionTab[lightness shl 1];
-      result := BGRA(color.red * lightness256 shr 8, color.green*lightness256 shr 8,
-                     color.blue * lightness256 shr 8, color.alpha);
-    end;
-  end else
-  begin
-    if lightness = 65535 then
-      result := BGRA(255,255,255,color.alpha) else
+      if lightness = 32768 then
+        Result := color else
+      begin
+        lightness256 := GammaCompressionTab[lightness shl 1];
+        Result := BGRA(color.red   * lightness256 shr 8,
+                       color.green * lightness256 shr 8,
+                       color.blue  * lightness256 shr 8,
+                       color.alpha);
+      end;
+    end
+  else if lightness = 65535 then
+    Result := BGRA(255,255,255,color.alpha)
+  else
     begin
       dec(lightness, 32767);
       r := GammaExpansionTab[color.red];
       g := GammaExpansionTab[color.green];
       b := GammaExpansionTab[color.blue];
-      result := BGRA(GammaCompressionTab[ r + (not r)*lightness shr 15 ],
+      Result := BGRA(GammaCompressionTab[ r + (not r)*lightness shr 15 ],
                      GammaCompressionTab[ g + (not g)*lightness shr 15 ],
                      GammaCompressionTab[ b + (not b)*lightness shr 15 ],
                      color.alpha);
     end;
-  end;
 end;
 
 function ApplyIntensityFast(color: TBGRAPixel; lightness: LongWord): TBGRAPixel;
@@ -427,43 +428,50 @@ var
     lightness256: byte;
 begin
   if lightness <= 32768 then
-  begin
-    if lightness = 32768 then
-      result := color else
     begin
-      lightness256 := GammaCompressionTab[lightness shl 1];
-      result := BGRA(color.red * lightness256 shr 8, color.green*lightness256 shr 8,
-                     color.blue * lightness256 shr 8, color.alpha);
-    end;
-  end else
-  begin
-    r := CombineLightness(GammaExpansionTab[color.red], lightness);
-    g := CombineLightness(GammaExpansionTab[color.green], lightness);
-    b := CombineLightness(GammaExpansionTab[color.blue], lightness);
-    maxValue := r;
-    if g > maxValue then maxValue := g;
-    if b > maxValue then maxValue := b;
-    if maxValue <= 65535 then
-      result := BGRA(GammaCompressionTab[r],
-                     GammaCompressionTab[g],
-                     GammaCompressionTab[b],
-                     color.alpha)
-    else
+      if lightness = 32768 then
+        Result := color else
+      begin
+        lightness256 := GammaCompressionTab[lightness shl 1];
+        Result := BGRA(color.red * lightness256 shr 8, color.green*lightness256 shr 8,
+                       color.blue * lightness256 shr 8, color.alpha);
+      end;
+    end
+  else
     begin
-      invMaxValue := (LongWord(2147483647)+LongWord(maxValue-1)) div maxValue;
-      maxValue := (maxValue-65535) shr 1;
-      r := r*invMaxValue shr 15 + maxValue;
-      g := g*invMaxValue shr 15 + maxValue;
-      b := b*invMaxValue shr 15 + maxValue;
-      if r >= 65535 then result.red := 255 else
-        result.red := GammaCompressionTab[r];
-      if g >= 65535 then result.green := 255 else
-        result.green := GammaCompressionTab[g];
-      if b >= 65535 then result.blue := 255 else
-        result.blue := GammaCompressionTab[b];
-      result.alpha := color.alpha;
+      r := CombineLightness(GammaExpansionTab[color.red], lightness);
+      g := CombineLightness(GammaExpansionTab[color.green], lightness);
+      b := CombineLightness(GammaExpansionTab[color.blue], lightness);
+      maxValue := r;
+      if g > maxValue then maxValue := g;
+      if b > maxValue then maxValue := b;
+      if maxValue <= 65535 then
+        Result := BGRA(GammaCompressionTab[r],
+                       GammaCompressionTab[g],
+                       GammaCompressionTab[b],
+                       color.alpha)
+      else
+      begin
+        invMaxValue := (LongWord(2147483647)+LongWord(maxValue-1)) div maxValue;
+        maxValue := (maxValue-65535) shr 1;
+        r := r*invMaxValue shr 15 + maxValue;
+        g := g*invMaxValue shr 15 + maxValue;
+        b := b*invMaxValue shr 15 + maxValue;
+        if r >= 65535 then
+          Result.red := 255
+        else
+          Result.red := GammaCompressionTab[r];
+        if g >= 65535 then
+          Result.green := 255
+        else
+          Result.green := GammaCompressionTab[g];
+        if b >= 65535 then
+          Result.blue := 255
+        else
+          Result.blue := GammaCompressionTab[b];
+        Result.alpha := color.alpha;
+      end;
     end;
-  end;
 end;
 
 function CombineLightness(lightness1,lightness2: Int32or64): Int32or64;
@@ -473,14 +481,14 @@ function CombineLightness(lightness1,lightness2: Int32or64): Int32or64;
     shl edx, 17
     shr eax, 15
     or edx, eax
-    mov result, edx
+    mov Result, edx
   end;
 {$ELSE}
 begin
   if (lightness1 < 0) xor (lightness2 < 0) then
-    result := -(int64(-lightness1)*lightness2 shr 15)
+    Result := -(int64(-lightness1)*lightness2 shr 15)
   else
-    result := int64(lightness1)*lightness2 shr 15;
+    Result := int64(lightness1)*lightness2 shr 15;
 end;
 {$ENDIF}
 
@@ -494,7 +502,7 @@ var
 begin
   if c.alpha = 0 then
   begin
-    result := BGRAPixelTransparent;
+    Result := BGRAPixelTransparent;
     exit;
   end;
   //gamma expansion
@@ -516,7 +524,7 @@ var
 begin
   if c.alpha = 0 then
   begin
-    result := BGRAPixelTransparent;
+    Result := BGRAPixelTransparent;
     exit;
   end;
   //gray composition
@@ -531,10 +539,10 @@ end;
 
 function GrayscaleToBGRA(lightness: word): TBGRAPixel;
 begin
-  result.red := GammaCompressionTab[lightness];
-  result.green := result.red;
-  result.blue := result.red;
-  result.alpha := $ff;
+  Result.red := GammaCompressionTab[lightness];
+  Result.green := Result.red;
+  Result.blue := Result.red;
+  Result.alpha := $ff;
 end;
 
 { Merge linearly two colors of same importance }
@@ -543,17 +551,16 @@ var c12: LongWord;
 begin
   if (c1.alpha = 0) then
     Result := c2
-  else
-  if (c2.alpha = 0) then
+  else if (c2.alpha = 0) then
     Result := c1
   else
-  begin
-    c12 := c1.alpha + c2.alpha;
-    Result.red   := (c1.red * c1.alpha + c2.red * c2.alpha + c12 shr 1) div c12;
-    Result.green := (c1.green * c1.alpha + c2.green * c2.alpha + c12 shr 1) div c12;
-    Result.blue  := (c1.blue * c1.alpha + c2.blue * c2.alpha + c12 shr 1) div c12;
-    Result.alpha := (c12 + 1) shr 1;
-  end;
+    begin
+      c12 := c1.alpha + c2.alpha;
+      Result.red   := (c1.red * c1.alpha + c2.red * c2.alpha + c12 shr 1) div c12;
+      Result.green := (c1.green * c1.alpha + c2.green * c2.alpha + c12 shr 1) div c12;
+      Result.blue  := (c1.blue * c1.alpha + c2.blue * c2.alpha + c12 shr 1) div c12;
+      Result.alpha := (c12 + 1) shr 1;
+    end;
 end;
 
 function MergeBGRA(c1: TBGRAPixel; weight1: integer; c2: TBGRAPixel;
@@ -562,35 +569,33 @@ var
     f1,f2,f12: int64;
 begin
   if (weight1 = 0) or (c1.alpha = 0) then
-  begin
-    if (weight2 = 0) or (c2.alpha = 0) then
-      result := BGRAPixelTransparent
-    else
-      Result := c2
-  end
-  else
-  if (weight2 = 0) or (c2.alpha = 0) then
+    begin
+      if (weight2 = 0) or (c2.alpha = 0) then
+        Result := BGRAPixelTransparent
+      else
+        Result := c2
+    end
+  else if (weight2 = 0) or (c2.alpha = 0) then
     Result := c1
-  else
-  if (weight1+weight2 = 0) then
+  else if (weight1+weight2 = 0) then
     Result := BGRAPixelTransparent
   else
-  begin
-    f1 := int64(c1.alpha)*weight1;
-    f2 := int64(c2.alpha)*weight2;
-    f12 := f1+f2;
-    if f12 = 0 then
-      result := BGRAPixelTransparent
-    else
     begin
-      Result.red   := (c1.red * f1 + c2.red * f2 + f12 shr 1) div f12;
-      Result.green := (c1.green * f1 + c2.green * f2 + f12 shr 1) div f12;
-      Result.blue  := (c1.blue * f1 + c2.blue * f2 + f12 shr 1) div f12;
-      {$hints off}
-      Result.alpha := (f12 + ((weight1+weight2) shr 1)) div (weight1+weight2);
-      {$hints on}
+      f1 := int64(c1.alpha)*weight1;
+      f2 := int64(c2.alpha)*weight2;
+      f12 := f1+f2;
+      if f12 = 0 then
+        Result := BGRAPixelTransparent
+      else
+        begin
+          Result.red   := (c1.red * f1 + c2.red * f2 + f12 shr 1) div f12;
+          Result.green := (c1.green * f1 + c2.green * f2 + f12 shr 1) div f12;
+          Result.blue  := (c1.blue * f1 + c2.blue * f2 + f12 shr 1) div f12;
+          {$hints off}
+          Result.alpha := (f12 + ((weight1+weight2) shr 1)) div (weight1+weight2);
+          {$hints on}
+        end;
     end;
-  end;
 end;
 
 function MergeBGRAWithGammaCorrection(c1: TBGRAPixel; weight1: byte; c2: TBGRAPixel;
@@ -601,37 +606,37 @@ begin
   w1 := weight1;
   w2 := weight2;
   if (w1 = 0) or (c1.alpha = 0) then
-  begin
-    if (w2 = 0) or (c2.alpha = 0) then
-      result := BGRAPixelTransparent
-    else
-      Result := c2
-  end
-  else
-  if (w2 = 0) or (c2.alpha = 0) then
+    begin
+      if (w2 = 0) or (c2.alpha = 0) then
+        Result := BGRAPixelTransparent
+      else
+        Result := c2
+    end
+  else if (w2 = 0) or (c2.alpha = 0) then
     Result := c1
   else
-  begin
-    f1 := c1.alpha*w1;
-    f2 := c2.alpha*w2;
-    a := (f1+f2 + ((w1+w2) shr 1)) div (w1+w2);
-    if a = 0 then
     begin
-      result := BGRAPixelTransparent;
-      exit;
-    end else
-      Result.alpha := a;
-    {$IFNDEF CPU64}
-    if (f1 >= 32768) or (f2 >= 32768) then
-    begin
-      f1 := f1 shr 1;
-      f2 := f2 shr 1;
-    end;
-    {$ENDIF}
-    f12 := f1+f2;
-    Result.red   := GammaCompressionTab[(GammaExpansionTab[c1.red] * f1 + GammaExpansionTab[c2.red] * f2) div f12];
-    Result.green := GammaCompressionTab[(GammaExpansionTab[c1.green] * f1 + GammaExpansionTab[c2.green] * f2) div f12];
-    Result.blue  := GammaCompressionTab[(GammaExpansionTab[c1.blue] * f1 + GammaExpansionTab[c2.blue] * f2) div f12];
+      f1 := c1.alpha*w1;
+      f2 := c2.alpha*w2;
+      a := (f1+f2 + ((w1+w2) shr 1)) div (w1+w2);
+      if a = 0 then
+        begin
+          Result := BGRAPixelTransparent;
+          exit;
+        end
+      else
+        Result.alpha := a;
+      {$IFNDEF CPU64}
+      if (f1 >= 32768) or (f2 >= 32768) then
+      begin
+        f1 := f1 shr 1;
+        f2 := f2 shr 1;
+      end;
+      {$ENDIF}
+      f12 := f1+f2;
+      Result.red   := GammaCompressionTab[(GammaExpansionTab[c1.red] * f1 + GammaExpansionTab[c2.red] * f2) div f12];
+      Result.green := GammaCompressionTab[(GammaExpansionTab[c1.green] * f1 + GammaExpansionTab[c2.green] * f2) div f12];
+      Result.blue  := GammaCompressionTab[(GammaExpansionTab[c1.blue] * f1 + GammaExpansionTab[c2.blue] * f2) div f12];
   end;
 end;
 
@@ -659,7 +664,7 @@ end;
 
 function FastRoundDiv257(valueWord: LongWord): byte; inline;
 begin
-  result := LongWord(valueWord + 127 - (valueWord shr 8)) shr 8;
+  Result := LongWord(valueWord + 127 - (valueWord shr 8)) shr 8;
 end;
 
 { Conversion from TFPColor to TBGRAPixel assuming TFPColor
@@ -672,41 +677,45 @@ end;
 
 function BGRAToFPColor(AValue: TBGRAPixel): TFPColor; inline;
 begin
-  result.red := AValue.red shl 8 + AValue.red;
-  result.green := AValue.green shl 8 + AValue.green;
-  result.blue := AValue.blue shl 8 + AValue.blue;
-  result.alpha := AValue.alpha shl 8 + AValue.alpha;
+  Result.red := AValue.red shl 8 + AValue.red;
+  Result.green := AValue.green shl 8 + AValue.green;
+  Result.blue := AValue.blue shl 8 + AValue.blue;
+  Result.alpha := AValue.alpha shl 8 + AValue.alpha;
 end;
 
 function Color16BitToBGRA(AColor: Word): TBGRAPixel;
 begin
-  result := BGRA( ((AColor and $F800) shr 11)*255 div 31,
+  Result := BGRA( ((AColor and $F800) shr 11)*255 div 31,
                   ((AColor and $07e0) shr 5)*255 div 63,
-                  (AColor and $001f)*255 div 31 );
+                   (AColor and $001f)*255 div 31 );
 end;
 
 function BGRAToColor16Bit(const AColor: TBGRAPixel): Word;
 begin
-  result := (((AColor.Red * 31 + 64) div 255) shl 11) +
+  Result := (((AColor.Red * 31 + 64) div 255) shl 11) +
             (((AColor.green * 63 + 64) div 255) shl 5) +
              ((AColor.blue * 31 + 64) div 255);
 end;
 
 function BGRAWordDiff(c1, c2: TBGRAPixel): word;
 begin
-  if c1 = c2 then result := 0
-  else result := ExpandedDiff(GammaExpansion(c1),GammaExpansion(c2));
+  if c1 = c2 then
+    Result := 0
+  else
+    Result := ExpandedDiff(GammaExpansion(c1),GammaExpansion(c2));
 end;
 
 function BGRADiff(c1,c2: TBGRAPixel): byte;
 begin
-  if c1 = c2 then result := 0
-  else result := ExpandedDiff(GammaExpansion(c1),GammaExpansion(c2)) shr 8;
+  if c1 = c2 then
+    Result := 0
+  else
+    Result := ExpandedDiff(GammaExpansion(c1),GammaExpansion(c2)) shr 8;
 end;
 
 function FastBGRALinearDiff(c1, c2: TBGRAPixel): byte;
 begin
-  result := max(min((abs(c1.red-c2.red)+(abs(c1.green-c2.green) shl 1)+abs(c1.blue-c2.blue)) shr 2,
+  Result := max(min((abs(c1.red-c2.red)+(abs(c1.green-c2.green) shl 1)+abs(c1.blue-c2.blue)) shr 2,
              min(c1.alpha,c2.alpha)), abs(c1.alpha-c2.alpha));
 end;
 
@@ -715,7 +724,7 @@ var wa1,wa2: word;
 begin
   wa1 := c1.alpha shl 8 + c1.alpha;
   wa2 := (c2.alpha shl 8) + c2.alpha;
-  result := max(min((abs(GammaExpansionTab[c1.red]-GammaExpansionTab[c2.red])+
+  Result := max(min((abs(GammaExpansionTab[c1.red]-GammaExpansionTab[c2.red])+
                (abs(GammaExpansionTab[c1.green]-GammaExpansionTab[c2.green]) shl 1)+
                abs(GammaExpansionTab[c1.blue]-GammaExpansionTab[c2.blue])) shr 2,
              min(wa1,wa2)),
@@ -729,7 +738,7 @@ var
 begin
   if length(colors)<=0 then
   begin
-    result := BGRAPixelTransparent;
+    Result := BGRAPixelTransparent;
     exit;
   end;
   sumR := 0;
@@ -746,33 +755,36 @@ begin
   end;
   if sumA > 0 then
   begin
-    result.red := (sumR + sumA shr 1) div sumA;
-    result.green := (sumG + sumA shr 1) div sumA;
-    result.blue := (sumB + sumA shr 1) div sumA;
-    result.alpha := sumA div LongWord(length(colors));
+    Result.red := (sumR + sumA shr 1) div sumA;
+    Result.green := (sumG + sumA shr 1) div sumA;
+    Result.blue := (sumB + sumA shr 1) div sumA;
+    Result.alpha := sumA div LongWord(length(colors));
   end
   else
-    result := BGRAPixelTransparent;
+    Result := BGRAPixelTransparent;
 end;
 
 function MapHeight(Color: TBGRAPixel): Single;
 var intval: integer;
 begin
   intval := color.Green shl 16 + color.red shl 8 + color.blue;
-  result := intval*5.960464832810452e-8;
+  Result := intval * 5.960464832810452e-8;
 end;
 
 function MapHeightToBGRA(Height: Single; Alpha: Byte): TBGRAPixel;
 var intval: integer;
 begin
-  if Height >= 1 then result := BGRA(255,255,255,alpha) else
-  if Height <= 0 then result := BGRA(0,0,0,alpha) else
-  begin
-    intval := round(Height*16777215);
-    {$PUSH}{$R-}
-    result := BGRA(intval shr 8,intval shr 16,intval,alpha);
-    {$POP}
-  end;
+  if Height >= 1 then
+    Result := BGRA(255, 255, 255, alpha)
+  else if Height <= 0 then
+    Result := BGRA(0, 0, 0, alpha)
+  else
+    begin
+      intval := round(Height*16777215);
+      {$PUSH}{$R-}
+      Result := BGRA(intval shr 8,intval shr 16,intval,alpha);
+      {$POP}
+    end;
 end;
 {$ENDIF}
 
