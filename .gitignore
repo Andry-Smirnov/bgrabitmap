@@ -111,3 +111,5 @@ doc/web
 
 test/testcore/lib
 test/testcore/lib_createfont
+
+use/*/
