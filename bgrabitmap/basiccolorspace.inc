@@ -1640,14 +1640,10 @@ begin
 end;
 
 operator := (const AValue: TExpandedPixel): TColor;
-begin
-  Result := BGRAToColor(GammaCompression(AValue));
-end;
+begin Result := BGRAToColor(GammaCompression(AValue)); end;
 
 operator := (const AValue: TColor): TExpandedPixel;
-begin
-  Result := GammaExpansion(ColorToBGRA(AValue))
-end;
+begin Result := GammaExpansion(ColorToBGRA(AValue)) end;
 
 operator :=(const Source: TExpandedPixel): TBGRAPixel;
 begin

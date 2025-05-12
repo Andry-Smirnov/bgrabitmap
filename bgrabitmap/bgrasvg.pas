@@ -236,7 +236,7 @@ end;
     procedure SetAttribute(AName: string; AValue: string); override;
   public
     constructor Create; overload;
-    constructor Create(AWidth, AHeight: single; AUnit: TCSSUnit); overload;
+    constructor Create(AWidth,AHeight: single; AUnit: TCSSUnit); overload;
     constructor Create(AFilenameUTF8: string); overload;
     constructor Create(AStream: TStream); overload;
     constructor CreateFromString(AUTF8String: string);
